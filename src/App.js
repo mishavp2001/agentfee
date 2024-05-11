@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Document, Page, Text, View, StyleSheet, PDFViewer } from '@react-pdf/renderer';
+import html2canvas from 'html2canvas';
 import "./AgentFeeCalculator.css";
 
 function AgentFeeCalculator() {
@@ -39,8 +41,38 @@ function AgentFeeCalculator() {
     setAgentFee(fee);
   };
 
+  const generatePdf = () => {
+    // Capture the HTML content of the component
+    html2canvas(document.getElementById('agent-fee-calculator')).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+
+      // Render PDF document
+      const pdf = (
+        <Document>
+          <Page size="A4">
+            <View style={styles.section}>
+              <Text>Minimum Sales Price: {minimumAllowed}</Text>
+              <Text>Final Purchase Price: {finalPurchasePrice}</Text>
+              <Text>Fixed Amount Agent Gets: {constantAmount}</Text>
+              <Text>Progressive Scale Ratio: {ratio}</Text>
+              <Text>Selling Agent Commission: {agentFee}</Text>
+              <Image src={imgData} style={styles.image} />
+            </View>
+          </Page>
+        </Document>
+      );
+
+      // Display PDF in the browser
+      return (
+        <PDFViewer style={{ width: '100%', height: '100vh' }}>
+          {pdf}
+        </PDFViewer>
+      );
+    });
+  };
+
   return (
-    <div className="agent-fee-calculator">
+    <div id="agent-fee-calculator" className="agent-fee-calculator">
       <span>
         This calculator serves both real estate agents and clients by enabling
         fair distribution of profits. The fundamental premise is that the
@@ -88,6 +120,9 @@ function AgentFeeCalculator() {
       <button className="calculate-button" onClick={calculateFee}>
         Calculate Commission
       </button>
+      <button className="generate-pdf-button" onClick={generatePdf}>
+        Generate PDF
+      </button>
       {agentFee && (
         <p className="agent-fee">Selling Agent Commission: ${agentFee}</p>
       )}
@@ -95,4 +130,18 @@ function AgentFeeCalculator() {
   );
 }
 
+// Define your styles
+const styles = StyleSheet.create({
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1
+  },
+  image: {
+    width: 200,
+    height: 200
+  }
+});
+
 export default AgentFeeCalculator;
+
